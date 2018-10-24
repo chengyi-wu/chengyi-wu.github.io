@@ -16,6 +16,10 @@
             font-size:60px; height: 300px; width: 300px; text-align: center;
             margin-left:auto; 
             margin-right:auto;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
         }
         td {
             height: 90px; 
@@ -27,7 +31,7 @@
         button {
             background-color: #e7e7e7; color: black;
             font-size: 26px;
-            width: 300px; height: 60px;
+            width: 300px; height: 50px;
         }
         </style>
         <script type="text/javascript">
@@ -168,6 +172,12 @@
         function setButtonText(name, txt) {
             var btn = document.getElementById(name);
             btn.innerHTML = txt;
+            if (txt == "X")
+                btn.style.backgroundColor = "Red";
+            else if (txt == "O")
+                btn.style.backgroundColor = "Blue";
+            else btn.style.backgroundColor = "";
+            btn.style.color = "White";
         }
         function endGame(){
             var winner = getWinner(state);
@@ -189,9 +199,9 @@
         </script>
     </head>
         <body>
-            <table border="1">
+            <table>
                 <tr>
-                    <td colspan="3"><div id = "banner">Tic Tac Toe</div></td>
+                    <td colspan="3" style="background-color: orange;"><div id = "banner">Tic Tac Toe</div></td>
                 </tr>
                 <tr>
                     <td id="btn0" onclick="btnClick(this);"></td>
