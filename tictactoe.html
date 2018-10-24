@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title>Tic Tac Toe</title>
+        <style type="text/css">
+        body {
+            font-size: 30pt;
+            font-family: Helvetica, sans-serif;
+            text-align:center;
+        }
+        table {
+            font-size:60px; height: 300px; width: 300px; text-align: center;
+            margin-left:auto; 
+            margin-right:auto;
+        }
+        td {
+            height: 90px; 
+            width:90px;
+        }
+        div {
+            font-size: 30px;
+        }
+        button {
+            background-color: #e7e7e7; color: black;
+            font-size: 26px;
+            width: 300px;
+        }
+        </style>
+        <script type="text/javascript">
+        var state = [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '];
+        var buttons = ['btn0','btn1','btn2','btn3','btn4','btn5','btn6','btn7','btn8'];
+        var factorial = [1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880]
+        var stateCache = {}
+        var cache = {}
+        var endStates = [
+            [0,1,2],
+            [3,4,5],
+            [6,7,8],
+            [0,3,6],
+            [1,4,7],
+            [2,5,8],
+            [0,4,8],
+            [2,4,6],
+            ]
+        function checkState(state) {
+            for(var i = 0; i < 8; i++) {
+                var s = endStates[i];
+                var a = s[0], b = s[1], c = s[2];
+                if((state[a] == state[b]) && (state[b] == state[c]) && (state[c] != ' ')) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        function getWinner(state) {
+            for(var i = 0; i < endStates.length; i++) {
+                var s = endStates[i];
+                var a = s[0], b = s[1], c = s[2];
+                if((state[a] == state[b]) && (state[b] == state[c]) && (state[c] != ' ')) {
+                    return state[a];
+                }
+            }
+            return null;
+        }
+        function playX(state) {
+            if (!state.includes(' ')) { return [state] }
+            var key = state.join("")
+            if(key in stateCache) { return stateCache[key]; }
+            states = new Array();
+            for(var i = 0; i < 9; i++) {
+                if(state[i] != ' ') { continue; }
+                var t = state.slice();
+                t[i] = 'X';
+                if(checkState(t)) {
+                    stateCache[key] = [t];
+                    return stateCache[key];
+                }
+                states = states.concat(playO(t));
+            }
+            stateCache[key] = states
+            return states;
+        }
+        function playO(state) {
+            if (!state.includes(' ')) { return [state] }
+            var key = state.join("")
+            if(key in stateCache) {
+                return stateCache[key];
+            }
+            states = new Array();
+            for(var i = 0; i < 9; i++) {
+                if(state[i] != ' ') { continue; }
+                var t = state.slice();
+                t[i] = 'O';
+                if(checkState(t)) {
+                    stateCache[key] = [t];
+                    return stateCache[key];
+                }
+                states = states.concat(playX(t));
+            }
+            stateCache[key] = states
+            return states;
+        }
+        function playmin(state) {
+            var key = state.join('');
+            var move = -1;
+            if (key in cache) { move = cache[key]; }
+            else {
+                var count = Infinity;
+                var move = -1
+                for(var i = 0; i < 9; i++) {
+                    if (state[i] != ' ') {continue;}
+                    var t = state.slice();
+                    t[i] = 'O';
+                    if (checkState(t)) {
+                        move = i;
+                        break;
+                    }
+                    var local = 0;
+                    playX(t).forEach(s => {
+                        var winner = getWinner(s);
+                        if(winner != null) {
+                            var emptyCount = 0;
+                            s.forEach(c => {
+                                if(c == ' ') {
+                                    emptyCount++;
+                                }
+                            });
+                            if (winner == 'X') {
+                                local += factorial[emptyCount + 1];
+                            } else if (winner == 'O') {
+                                local += -factorial[emptyCount + 1];
+                            }
+                        }
+                    });
+                    console.log(i, local);
+                    if (local < count) {
+                        count = local;
+                        move = i;
+                    }
+                }
+                cache[key] = move;
+            }
+            console.log("Place O at", move);
+            return move;
+        }
+        function btnClick(sender) {
+            move = parseInt(sender.id.substr(3))
+            if(state[move] != ' ' || checkState(state)) { return; }
+            state[move] = 'X'
+            setButtonText(buttons[move], state[move]);
+            if(!state.includes(' ') || checkState(state)) {
+                endGame();
+                return;
+            }
+            move = playmin(state);
+            // console.log(stateCache)
+            state[move] = 'O'
+            setButtonText(buttons[move], state[move]);
+            if(!state.includes(' ') || checkState(state)) {
+                endGame();
+                return;
+            }
+        }
+        function setButtonText(name, txt) {
+            var btn = document.getElementById(name);
+            btn.innerHTML = txt;
+        }
+        function endGame(){
+            var winner = getWinner(state);
+            var banner = document.getElementById('banner');
+            if (winner == null) {
+                banner.innerHTML = '>> Draw <<';
+            } else {
+                banner.innerHTML = '>> ' + winner + ' wins  <<';
+            }
+        }
+        function resetState(){
+            state = [' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' '];
+            buttons.forEach(btn => {
+                setButtonText(btn, '');
+            });
+            var banner = document.getElementById('banner');
+            banner.innerHTML = 'Tic Tac Toe';
+        }
+        </script>
+    </head>
+        <body>
+            <table border="1">
+                <tr>
+                    <td colspan="3"><div id = "banner">Tic Tac Toe</div></td>
+                </tr>
+                <tr>
+                    <td id="btn0" onclick="btnClick(this);"></td>
+                    <td id="btn1" onclick="btnClick(this);"></td>
+                    <td id="btn2" onclick="btnClick(this);"></td>
+                </tr>
+                 <tr>
+                    <td id="btn3" onclick="btnClick(this);"></td>
+                    <td id="btn4" onclick="btnClick(this);"></td>
+                    <td id="btn5" onclick="btnClick(this);"></td>
+                </tr>
+                 <tr>
+                    <td id="btn6" onclick="btnClick(this);"></td>
+                    <td id="btn7" onclick="btnClick(this);"></td>
+                    <td id="btn8" onclick="btnClick(this);"></td>
+                </tr>
+            </table>
+            <button onclick="resetState();" >Play again!</button>
+        </body>
+</html>
